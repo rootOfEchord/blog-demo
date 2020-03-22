@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>takephoto-demo</title>
+</head>
+
+<body>
+    <div style="margin: 50px auto;display: flex;justify-content: space-around;flex-wrap: wrap;">
+        <video src="" width="300" height="300" id="video" style="margin: 50px;border: 1px solid red;transform: scale(-1, 1);"></video>
+        <canvas id="canvas" width="300" height="300" style="margin: 50px;border: 1px solid red;"></canvas>
+        <img id="img" src="" alt="">
+    </div>
+    <div style="text-align: center;">
+        <button id="btn1">调用色相头</button>
+        <button id="btn2">拍照</button>
+    </div>
+
+
+    <script>
+        window.onload = function () {
+            let mediaStreamTrack = null
+            document.getElementById('btn1').addEventListener('click', () => {
+                let constraints = {
+                    audio: false,
+                    video: {
+                        width: 300,
+                        height: 300
+                    }
+                }
+                getUserMedia(constraints, getUserMediaSuccess, getUserMediaError)
+            })
+            document.getElementById('btn2').addEventListener('click', () => {
+                handleTakePhoto()
+            })
+            function handleTakePhoto() {
+                const canvas = document.getElementById('canvas');
+                const context = canvas.getContext('2d');
+                const video = document.getElementById('video');
+                // context.drawImage(video, 0, 0, this.width, this.height);
+                // 设置画布的原点
+                context.translate(300, 0);
+                // 翻转画布
+                context.scale(-1, 1);
+                context.drawImage(video, 0, 0, 300, 300);
+                // 画布生成base64图片
+                const imageUrl = canvas.toDataURL('image/jpeg', 0.7)
+                document.getElementById('img').src = imageUrl
+                console.log('imageBase64', imageUrl)
+                // 关闭摄像头
+                mediaStreamTrack.stop()
+            }
+
+            function getUserMediaSuccess(stream) {
+                // 将视频流设置为video元素的源
+                console.log(stream);
+                // 获取video的 track
+                mediaStreamTrack = typeof stream.stop === 'function' ? stream : stream.getTracks()[0];
+                const video = document.getElementById('video');
+                // 兼容低版本浏览器
+                if ('srcObject' in video) {
+                    video.srcObject = stream;
+                } else {
+                    // 兼容webkit核心浏览器
+                    const CompatibleURL = window.URL || window.webkitURL;
+                    video.src = CompatibleURL.createObjectURL(stream);
+                }
+                video.onloadedmetadata = () => {
+                    console.log('video play')
+                    video.play();
+                };
+            }
+
+            function getUserMediaError(error) {
+                console.log('getMediaerror: ', error);
+            }
+
+            function getUserMedia(constraints, success, error) {
+                // api接口参考 https://developer.mozilla.org/zh-CN/docs/Web/API/MediaDevices/getUserMedia
+                if (navigator.mediaDevices.getUserMedia) {
+                    // 最新的标准API
+                    navigator.mediaDevices.getUserMedia(constraints).then(success).catch(error);
+                } else if (navigator.webkitGetUserMedia) {
+                    // webkit核心浏览器
+                    navigator.webkitGetUserMedia(constraints, success, error)
+                } else if (navigator.mozGetUserMedia) {
+                    // firfox浏览器
+                    navigator.mozGetUserMedia(constraints, success, error);
+                } else if (navigator.getUserMedia) {
+                    // 旧版API
+                    navigator.getUserMedia(constraints, success, error);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
