@@ -1,24 +1,35 @@
 <template>
- <div class="home-page">
-   home-page
- </div>
+    <div class="home-page">
+        <h1>VUE-DEMO BY ROOTOFECHORD</h1>
+        <div class="menu">
+            <div v-for="item in routes" :key="item.path" class="item">
+                <router-link :to="item.path">{{
+                    item.meta.title || '啊脑袋～'
+                }}</router-link>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script>
- export default {
-   name: 'home-page',
-   components: {
+import { routes } from '../router'
 
-   },
-   data () {
-     return {
-
-     }
-   },
- }
+export default {
+    name: 'home-page',
+    components: {},
+    data() {
+        return {
+            routes
+        }
+    }
+}
 </script>
 
 <style lang="less" scoped>
-
- .home-page{}
+.home-page {
+    .menu {
+        line-height: 30px;
+        text-align: center;
+    }
+}
 </style>
